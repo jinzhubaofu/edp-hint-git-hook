@@ -6,7 +6,7 @@
 
 ### 使用
 
-首先，请先安装`edp`以及`edp hint`， 你可以使用下面脚本来安装`edp hint`
+首先，请先安装`edp`以及`edp hint`， 你可以使用下面脚本来安装
 
 ```shell
 [sudo]npm install -g edp
