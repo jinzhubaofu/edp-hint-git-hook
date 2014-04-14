@@ -1,0 +1,105 @@
+#! /usr/bin/env node
+
+var path = require('path');
+var root = path.resolve(__dirname, '../../');
+var exec = require('child_process').exec;
+
+var HOMEBREW_WARNING = ''
+    + 'edp WARN Recommended using `homebrew` install `nodejs`, '
+    + 'otherwise you may encounter some weird problems.';
+
+var child = exec('git diff-index --cached --name-only HEAD', function (error, result, stderr) {
+    if (error !== null) {
+        console.log('exec error: ' + error);
+        process.exit(1);
+    }
+
+    var stagedFiles = result.trim().split('\n');
+
+    if (!stagedFiles || !stagedFiles.length) {
+        process.exit(0);
+        return;
+    }
+
+    execEdpHint(stagedFiles);
+
+});
+
+function execEdpHint(files) {
+
+    // 如果你不想要检查html，那只要注释到掉categories['.html']属性
+    var categories = {
+        '.js': [],
+        // '.html': [],
+        '.css': []
+    };
+
+    files.forEach(function (file) {
+
+        var ext = path.extname(file);
+        var category = categories[ext];
+
+        if (!category) {
+            return;
+        }
+
+        category.push(file);
+
+    });
+
+    var launched = 0;
+    var hasError = false;
+
+    for (var category in categories) {
+
+        if (!categories[category].length) {
+            continue;
+        }
+
+        launched++;
+
+        var type = category.slice(1);
+        var subCommand = type + ( type === 'css' ? 'lint' : 'hint');
+        var command = 'edp ' + subCommand + ' ' + categories[category].join(' ');
+
+        exec(command, function (err, result) {
+
+            if (err) {
+                console.error(err);
+                hasError = true;
+                return;
+            }
+
+            if (containsError(result)) {
+                hasError = true;
+                console.log(result);
+            }
+
+            if (--launched === 0) {
+
+                if (hasError) {
+                    console.error('Aborting commit due to hint error');
+                    process.exit(1);
+                }
+
+                process.exit(0);
+
+            }
+
+        });
+
+    }
+
+}
+
+function containsError(result) {
+
+    var index = result.indexOf(HOMEBREW_WARNING);
+
+    if (index !== -1) {
+        result = result.slice(index + 1 + HOMEBREW_WARNING.length);
+    }
+
+    return result.indexOf('WARN') !== -1;
+
+}
