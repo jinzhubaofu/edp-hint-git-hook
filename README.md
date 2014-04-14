@@ -1,5 +1,9 @@
 ## [GIT-HOOK]代码风格检查小工具
 
+### 目标
+
+我们的目标是帮助大家养成良好的编码风格，代码没有hint error！
+
 ### 功能
 
 使用`edp jshint`或者`edp csslint`对`git commit`提交的文件进行语法检测。如果没有通过检测，会强制中止`git commit`。
@@ -27,4 +31,9 @@ Aborting commit due to hint error
 
 ### 未来功能
 
-1. 添加htmlhint
+1. 添加html代码检测
+2. 添加less代码检测
+
+### 其他
+
+欢迎pull request～！

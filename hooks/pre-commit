@@ -65,12 +65,10 @@ function execEdpHint(files) {
         exec(command, function (err, result) {
 
             if (err) {
-                console.error(err);
                 hasError = true;
-                return;
+                console.error(err);
             }
-
-            if (containsError(result)) {
+            else if (containsError(result)) {
                 hasError = true;
                 console.log(result);
             }
