@@ -24,3 +24,7 @@ edp WARN → line 3, col 9: Missing semicolon.
 
 Aborting commit due to hint error
 ```
+
+### 未来功能
+
+1. 添加htmlhint
