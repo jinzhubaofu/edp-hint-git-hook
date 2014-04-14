@@ -1,14 +1,13 @@
 #! /usr/bin/env node
 
 var path = require('path');
-var root = path.resolve(__dirname, '../../');
 var exec = require('child_process').exec;
 
 var HOMEBREW_WARNING = ''
     + 'edp WARN Recommended using `homebrew` install `nodejs`, '
     + 'otherwise you may encounter some weird problems.';
 
-var child = exec('git diff-index --cached --name-only HEAD', function (error, result, stderr) {
+exec('git diff-index --cached --name-only HEAD', function (error, result, stderr) {
     if (error !== null) {
         console.log('exec error: ' + error);
         process.exit(1);
@@ -21,11 +20,11 @@ var child = exec('git diff-index --cached --name-only HEAD', function (error, re
         return;
     }
 
-    execEdpHint(stagedFiles);
+    edpHint(stagedFiles);
 
 });
 
-function execEdpHint(files) {
+function edpHint(files) {
 
     // 如果你不想要检查html，那只要注释到掉categories['.html']属性
     var categories = {
@@ -50,6 +49,30 @@ function execEdpHint(files) {
     var launched = 0;
     var hasError = false;
 
+    var edpHintHandler = function (err, result) {
+
+        if (err) {
+            hasError = true;
+            console.error(err);
+        }
+        else if (containsError(result)) {
+            hasError = true;
+            console.log(result);
+        }
+
+        if (--launched === 0) {
+
+            if (hasError) {
+                console.error('Aborting commit due to hint error');
+                process.exit(1);
+            }
+
+            process.exit(0);
+
+        }
+
+    };
+
     for (var category in categories) {
 
         if (!categories[category].length) {
@@ -62,29 +85,7 @@ function execEdpHint(files) {
         var subCommand = type + ( type === 'css' ? 'lint' : 'hint');
         var command = 'edp ' + subCommand + ' ' + categories[category].join(' ');
 
-        exec(command, function (err, result) {
-
-            if (err) {
-                hasError = true;
-                console.error(err);
-            }
-            else if (containsError(result)) {
-                hasError = true;
-                console.log(result);
-            }
-
-            if (--launched === 0) {
-
-                if (hasError) {
-                    console.error('Aborting commit due to hint error');
-                    process.exit(1);
-                }
-
-                process.exit(0);
-
-            }
-
-        });
+        exec(command, edpHintHandler);
 
     }
 
